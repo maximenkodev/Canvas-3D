@@ -1,35 +1,33 @@
-$(document).ready(function()
-{
-    if($(window).width() > 768)
-    {
+$(document).ready(function () {
+    if ($(window).width() > 768) {
         var animationExample = new Canvas3D({
-            "countFramesHorizontal": 80,
-            "countFramesVertical": 81,
-            "pathToFrames": "frames/hand",
-            "playHorizontal": true, //Turn on/off horizontal animations (mousemove) [true/false]
-            "playVertical": true, //Turn on/off vertical animations (scroll, mousewheel) [true/false]
-            "pageID": false, //Will work, if Selector ID exist on page [#selector/false]
-            "activateFor": "#render-area", //ID of canvas [#selector]
-            "clickSelector": ".clock-interactive" //Will work if Selector has class 'active' [selector/false]
+            countFramesHorizontal: 80,
+            countFramesVertical: 81,
+            pathToFrames: "frames/education",
+            activateFor: "#render-area",
+            playHorizontal: true, // Turn on/off horizontal animations (mousemove) [true/false]
+            playVertical: true, // Turn on/off vertical animations (scroll, mousewheel) [true/false]
+            pageID: false, // todo Will work, if Selector ID exist on page [#selector/false]
+            clickSelector: false, // Will work if Selector has class 'active' [selector/false]
+            listSelector: false // Class of list elements (<li>) [selector/false]
         });
         animationExample.InitRender({
-            "canvWidth": 1920,
-            "canvHeight": 700,
-            "autoplaySpeed": 3, //How fast will animate reverse animation (default: 3) [1 - 9]
-            "offsetToAnimateY": 300 //Position, where scroll will animation start. Difference between canvas top (default: 300) [0 - 999]
-        })
+            canvWidth: 1920,
+            canvHeight: 700,
+            autoplaySpeed: 3, // How fast will animate reverse animation (default: 3) [1 - 9]
+            offsetToAnimateY: 300, // Position, where scroll will animation start. Difference between canvas top (default: 300) [0 - 999]
+            startFromLast: false
+        });
     }
 });
 
-function Canvas3D(params)
-{
+function Canvas3D(params) {
     /*----------Canvas3D Constructor----------*/
     params.countFramesHorizontal > 0 ? this.countFramesHorizontal = params.countFramesHorizontal : Log("countFramesHorizontal must be 1 or more");
 
     params.countFramesVertical > 0 ? this.countFramesVertical = params.countFramesVertical : Log("countFramesVertical must be 1 or more");
 
-    switch(params.pathToFrames)
-    {
+    switch (params.pathToFrames) {
         case "/":
         case "":
             this.pathToFrames = "";
@@ -42,8 +40,7 @@ function Canvas3D(params)
 
     typeof params.playVertical === "boolean" ? this.playVertical = params.playVertical : Log("playVertical must be only true or false");
 
-    switch(params.pageID)
-    {
+    switch (params.pageID) {
         case false:
         case "":
             this.pageID = false;
@@ -55,8 +52,7 @@ function Canvas3D(params)
             this.pageID = params.pageID;
     }
 
-    switch(params.clickSelector)
-    {
+    switch (params.clickSelector) {
         case false:
         case "":
             this.clickSelector = false;
@@ -67,8 +63,18 @@ function Canvas3D(params)
         default:
             this.clickSelector = params.clickSelector;
     }
-    switch(params.activateFor)
-    {
+    switch (params.listSelector) {
+        case false:
+        case "":
+            this.listSelector = false;
+            break;
+        case true:
+            Log("listSelector can be only as selector or empty/false");
+            break;
+        default:
+            this.listSelector = params.listSelector;
+    }
+    switch (params.activateFor) {
         case false:
         case "":
             this.activateFor = false;
@@ -81,13 +87,11 @@ function Canvas3D(params)
     }
 
     /*----------Canvas3D Log----------*/
-    function Log(message)
-    {
+    function Log(message) {
         console.log("Canvas3D: " + message);
     }
 
-    this.InitRender = function(params)
-    {
+    this.InitRender = function (params) {
         var renderParams = {
             "countFramesX": this.countFramesHorizontal,
             "countFramesY": this.countFramesVertical,
@@ -96,7 +100,8 @@ function Canvas3D(params)
             "playVertical": this.playVertical,
             "pageID": this.pageID,
             "activateFor": this.activateFor,
-            "clickSelector": this.clickSelector
+            "clickSelector": this.clickSelector,
+            "listSelector": this.listSelector
         };
 
         var partsHorizontal = Math.round($(window).width() / renderParams.countFramesX);
@@ -124,7 +129,6 @@ function Canvas3D(params)
         var tmpStep = 0;
         var skipSteps = false;
         var autoplaySpeed = params.autoplaySpeed;
-        var mousePosX = 0;
         var tmpFrameX = 0;
 
         var canvas = renderArea.get(0);
@@ -136,237 +140,255 @@ function Canvas3D(params)
         var loadingProgress = 0;
         var preRenderFinish = false;
 
-        var clickCheck = true;
+        var clickCheck = false;
         $(renderParams.clickSelector).hasClass("active") || renderParams.clickSelector === false ? clickCheck = true : clickCheck = false;
-        /*----------PreRender images on load----------*/
-        $(document).ready(function()
-        {
-            InsertImages();
+        $(renderParams.listSelector).click(function () {
+            $(this).hasClass(renderParams.clickSelector.replace(".", "")) ? clickCheck = true : clickCheck = true;
         });
 
+        if (typeof renderParams.clickSelector !== "undefined") {
+
+        }
+        /*----------PreRender images on load----------*/
+        $(document).ready(function () {
+            InsertImages();
+        });
         /*----------playHorizontal === true----------*/
-        $(window).mousemove(function(ev)
-        {
-            mousePositionX = ev.pageX;
-            tmpFrameX = Math.round(mousePositionX / partsHorizontal);
-            if(renderParams.playHorizontal && preRenderFinish === true)
-            {
+        $(window).mousemove(function (ev) {
+            tmpFrameX = Math.round(ev.pageX / partsHorizontal);
+            if (CheckStatus()) {
                 AnimateHorizontal(ev.pageX);
             }
         });
         /*----------playVertical === true----------*/
-        $(window).scroll(function(ev)
-        {
-            if(renderParams.playVertical && preRenderFinish === true)
-            {
-                //TODO add scroll logic
+        $(window).scroll(function (ev) {
+            if (CheckStatus()) {
+                // TODO add scroll logic
             }
         });
         /*----------playVertical === true----------*/
-        $(window).on("wheel", function(ev)
-        {
-            if(renderParams.playVertical && preRenderFinish === true)
-            {
-                //Scroll DOWN
-                if(ev.originalEvent.deltaY >= 0 && $(window).scrollTop() >= renderAreaTop - offsetForY)
-                {
+        $(window).on("wheel", function (ev) {
+            if (CheckStatus()) {
+                // SCROLL DOWN
+                if (ev.originalEvent.deltaY >= 0 && $(window).scrollTop() >= renderAreaTop - offsetForY) {
                     wheelWork = true;
-                    switch(tmpStep)
-                    {
+                    switch (tmpStep) { // tmpStep = step in params of sequence
                         case 0:
-                            if(!reverseWork.work)
-                                ReverseX(1, false, false, false, true);
+                            if (!reverseWork.work)
+                                if (params.startFromLast) {
+                                    ReverseXBack({
+                                        step: 1, // Number in sequence of animations (example: ReverseX -> ReverseY -> ReverseXBack)
+                                        skip: false, // When false - scroll will be disabled, true - for final animation, if you want to allow scroll
+                                        next: false, // Last frame/limit of frames
+                                        then: false, // Function which will performs, after end of current function
+                                        wheel: true // When true - horizontal mouse tracing (mousemove) will be disabled
+                                    });
+                                }
+                                else {
+                                    ReverseX({
+                                        step: 1, // Number in sequence of animations (example: ReverseX -> ReverseY -> ReverseXBack)
+                                        skip: false, // When false - scroll will be disabled, true - for final animation, if you want to allow scroll
+                                        next: false, // Last frame/limit of frames
+                                        then: false, // Function which will performs, after end of current function
+                                        wheel: true // When true - horizontal mouse tracing (mousemove) will be disabled
+                                    });
+                                }
                             break;
                         case 1:
-                            if(!reverseWork.work)
-                                ReverseY(2, true, false, false, true);
+                            if (!reverseWork.work)
+                                ReverseY({
+                                    step: 2,
+                                    skip: true,
+                                    next: false,
+                                    then: false,
+                                    wheel: true
+                                });
                             break;
                     }
 
-                    /*clearTimeout($.data(this, "timer"));
-                    $.data(this, "timer", setTimeout(function()
-                    {
+                    /*----------Delay/pause on mousewheel----------*/
+                    // clearTimeout($.data(this, "timer"));
+                    // $.data(this, "timer", setTimeout(function () {
+                    //
+                    // }, 10));
 
-                    }, 10));*/
-
-                    if(tmpStep < 3 && !skipSteps)
-                    {
+                    if (tmpStep < 3 && !skipSteps) {
                         ev.preventDefault();
                     }
                 }
-                //Scroll UP
-                else if(ev.originalEvent.deltaY <= 0 && $(window).scrollTop() <= renderAreaBottom)
-                {
-                    if(!reverseWork.work && wheelWork)
-                        ReverseYBack(0, false, false, renderParams.countFramesX, "ReverseXBack(0, false, tmpFrameX, false, false)", true);
+                /*----------SCROLL UP----------*/
+                else if (ev.originalEvent.deltaY <= 0 && $(window).scrollTop() <= renderAreaBottom) {
+                    if (!reverseWork.work && wheelWork)
+                        ReverseYBack({
+                            step: 0,
+                            skip: false,
+                            next: false,
+                            fromX: renderParams.countFramesX,
+                            then: function () {
+                                ReverseXBack({
+                                    step: 0,
+                                    skip: false,
+                                    next: tmpFrameX,
+                                    then: false,
+                                    wheel: false
+                                })
+                            },
+                            wheel: true
+                        });
                 }
-
                 AnimateVertical($(this).scrollTop);
             }
         });
 
-        function AnimateHorizontal(mousePositionX)
-        {
-            if(!reverseWork.work && !wheelWork)
-            {
+        /**
+         * @return {boolean}
+         */
+        function CheckStatus() {
+            if (renderParams.playHorizontal && preRenderFinish === true && clickCheck === true) {
+                return true;
+            }
+        }
+
+        function AnimateHorizontal(mousePositionX) {
+            if (!reverseWork.work && !wheelWork) {
                 activeImgHorizontal = Math.round(mousePositionX / partsHorizontal);
                 Render(activeImgHorizontal, "ih");
             }
         }
 
-        function AnimateVertical(documentPositionTop)
-        {
-            if(clickCheck)
-            {
-                //TODO Continue
+        function AnimateVertical(documentPositionTop) {
+            if (clickCheck) {
+                // TODO Continue
             }
         }
 
         /*----------Reverse on scroll----------*/
-        function ReverseX(step, skip, next, then, wheel)
-        {
-            //Checks Start
+        function ReverseX(params) {
+            Log("ReverseX");
+            // Checks Start
             reverseWork.work = true;
-            if(next === false)
-                next = renderParams.countFramesX;
+            if (params.next === false)
+                params.next = renderParams.countFramesX;
 
-            if(activeImgHorizontal < next)
-            {
-                var timer = setInterval(function()
-                {
-                    if(activeImgHorizontal < next)
-                    {
+            console.log(activeImgHorizontal + " : " + params.next);
+            if (activeImgHorizontal < params.next) {
+                var timer = setInterval(function () {
+                    if (activeImgHorizontal < params.next) {
                         activeImgHorizontal += autoplaySpeed;
                         Render(activeImgHorizontal, "ih");
                     }
-                    else
-                    {
-                        //Checks End
+                    else {
+                        // Checks End
                         reverseWork.work = false;
-                        tmpStep = step;
-                        skipSteps = skip;
-
-                        activeImgHorizontal = next;
+                        tmpStep = params.step;
+                        skipSteps = params.skip;
+                        wheelWork = params.wheel;
+                        activeImgHorizontal = params.next;
                         activeImgVertical = 1;
                         clearInterval(timer);
                     }
                 }, 24);
             }
-            else
-            {
-                activeImgHorizontal = next;
+            else {
+                activeImgHorizontal = params.next;
                 activeImgVertical = 1;
             }
         }
 
-        function ReverseY(step, skip, next, then, wheel)
-        {
-            //Checks Start
+        function ReverseY(params) {
+            Log("ReverseY");
+            // Checks Start
             reverseWork.work = true;
-            if(next === false)
-                next = renderParams.countFramesY;
+            if (params.next === false)
+                params.next = renderParams.countFramesY;
 
-            if(activeImgVertical < next)
-            {
-                var timer = setInterval(function()
-                {
-                    if(activeImgVertical < next)
-                    {
+            if (activeImgVertical < params.next) {
+                var timer = setInterval(function () {
+                    if (activeImgVertical < params.next) {
                         activeImgVertical += autoplaySpeed;
                         Render(activeImgVertical, "iv");
                     }
-                    else
-                    {
-                        //Checks End
+                    else {
+                        // Checks End
                         reverseWork.work = false;
-                        tmpStep = step;
-                        skipSteps = skip;
-                        activeImgVertical = next;
+                        tmpStep = params.step;
+                        skipSteps = params.skip;
+                        activeImgVertical = params.next;
                         clearInterval(timer);
                     }
                 }, 24)
             }
-            else
-            {
-                activeImgVertical = next;
+            else {
+                activeImgVertical = params.next;
             }
         }
 
-        function ReverseXBack(step, skip, next, then, wheel)
-        {
-            //Checks Start
+        function ReverseXBack(params) {
+            Log("ReverseXBack");
+            // Checks Start
             reverseWork.work = true;
-            if(next === false)
-                next = 0;
-            console.log(next);
+            if (params.next === false)
+                params.next = 0;
 
-            var timer = setInterval(function()
-            {
-                if(activeImgHorizontal > next)
-                {
+            var timer = setInterval(function () {
+                if (activeImgHorizontal > params.next) {
                     activeImgHorizontal -= autoplaySpeed;
                     Render(activeImgHorizontal, "ih");
                 }
-                else
-                {
-                    //Checks End
+                else {
+                    console.log(tmpFrameX + " / " + activeImgHorizontal);
+                    // Checks End
                     reverseWork.work = false;
-                    tmpStep = step;
-                    skipSteps = skip;
-                    activeImgHorizontal = next;
-                    wheelWork = wheel;
+                    tmpStep = params.step;
+                    skipSteps = params.skip;
+                    activeImgHorizontal = params.next;
+                    wheelWork = params.wheel;
                     activeImgVertical = 1;
                     clearInterval(timer);
                 }
             }, 24);
         }
 
-        function ReverseYBack(step, skip, next, fromX, then, wheel)
-        {
-            //Checks Start
+        function ReverseYBack(params) {
+            Log("ReverseYBack");
+            // Checks Start
             reverseWork.work = true;
-            if(next === false)
-                next = 0;
+            if (params.next === false)
+                params.next = 0;
 
-            var timer = setInterval(function()
-            {
-                if(activeImgVertical > next)
-                {
+            var timer = setInterval(function () {
+                if (activeImgVertical > params.next) {
                     activeImgVertical -= autoplaySpeed;
                     Render(activeImgVertical, "iv");
                 }
-                else
-                {
-                    //Checks End
+                else {
+                    // Checks End
                     reverseWork.work = false;
-                    tmpStep = step;
-                    skipSteps = skip;
-                    activeImgVertical = next;
-                    activeImgHorizontal = fromX;
+                    tmpStep = params.step;
+                    skipSteps = params.skip;
+                    activeImgVertical = params.next;
+                    activeImgHorizontal = params.fromX;
+                    wheelWork = params.wheel;
                     clearInterval(timer);
-                    if(then)
-                        eval(then);
+                    if (typeof params.then === "function")
+                        params.then();
                 }
             }, 24);
         }
 
 
         /*----------Render----------*/
-        function InsertImages()
-        {
+        function InsertImages() {
             var i;
-            for(i = 1; i <= renderParams.countFramesX; i++)
-            {
+            for (i = 1; i <= renderParams.countFramesX; i++) {
                 PreRender(i, "ih");
             }
-            for(i = 1; i <= renderParams.countFramesY; i++)
-            {
+            for (i = 1; i <= renderParams.countFramesY; i++) {
                 PreRender(i, "iv");
             }
         }
 
-        function DisplayCanvas()
-        {
+        function DisplayCanvas() {
             Render(activeImgHorizontal, "ih");
 
             renderArea.fadeIn();
@@ -377,10 +399,9 @@ function Canvas3D(params)
             preRenderFinish = true;
         }
 
-        function PreRender(num, selector)
-        {
-            switch(selector)
-            {
+        function PreRender(num, selector) {
+            console.log(selector);
+            switch (selector) {
                 case "ih":
                     limitFrames = renderParams.countFramesX;
                     break;
@@ -390,26 +411,21 @@ function Canvas3D(params)
                 default:
                     limitFrames = renderParams.countFramesX;
             }
-            if(num <= limitFrames && num > 0)
-            {
+            if (num <= limitFrames && num > 0) {
                 canvasImg = new Image();
                 canvasImg.src = renderParams.pathToFrames + "/" + selector + "/(" + num + ").jpg?hash=" + selector;
-                canvasImg.onload = function()
-                {
+                canvasImg.onload = function () {
                     canvasContext.drawImage(canvasImg, 0, 0);
                     loadingProgress++;
-                    if(loadingProgress >= renderParams.countFramesX && preRenderFinish === false)
-                    {
+                    if (loadingProgress >= renderParams.countFramesX && preRenderFinish === false) {
                         DisplayCanvas();
                     }
                 }
             }
         }
 
-        function Render(num, selector)
-        {
-            switch(selector)
-            {
+        function Render(num, selector) {
+            switch (selector) {
                 case "ih":
                     limitFrames = renderParams.countFramesX;
                     break;
@@ -419,12 +435,10 @@ function Canvas3D(params)
                 default:
                     limitFrames = renderParams.countFramesX;
             }
-            if(num <= limitFrames && num > 0)
-            {
+            if (num <= limitFrames && num > 0) {
                 canvasImg = new Image();
                 canvasImg.src = renderParams.pathToFrames + "/" + selector + "/(" + num + ").jpg?hash=" + selector;
-                canvasImg.onload = function()
-                {
+                canvasImg.onload = function () {
                     canvasContext.drawImage(canvasImg, 0, 0);
                 }
             }

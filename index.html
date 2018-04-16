@@ -1,55 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Test 3D vCanvas</title>
-    <link rel="icon" href="">
+	<meta charset="UTF-8">
+	<title>Canvas 3D (Demo)</title>
+	<link rel="icon" href="">
 </head>
 <style>
-    * {
-        padding: 0;
-        margin: 0;
-        box-sizing: border-box;
-    }
+	* {
+		padding: 0;
+		margin: 0;
+		box-sizing: border-box;
+	}
 
-    body {
-        background-color: #121315;
-        height: 2000px;
-        max-width: 100vw;
-        overflow-x: hidden;
-    }
+	body {
+		background-color: #121315;
+		height: 2000px;
+		max-width: 100vw;
+		overflow-x: hidden;
+	}
 
-    #img-container {
-        width: 100vw;
-        height: 100vh;
-    }
+	#img-container {
+		width: 100vw;
+		height: 100vh;
+	}
 
-    #render-area {
-        max-height: 90vh;
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 100;
-    }
+	#render-area {
+		max-height: 90vh;
+		display: block;
+		position: absolute;
+		top: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 100;
+	}
 
-    #canvas-preloader
-    {
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 90;
-    }
+	#canvas-preloader
+	{
+		position: absolute;
+		top: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 90;
+	}
 </style>
 <body>
 <span class="clock-interactive active"></span>
 <div id="img-container">
-    <img id="canvas-preloader" src="img/preloader.svg" alt="preloader">
-    <canvas style="display: none" id="render-area"></canvas>
+	<img id="canvas-preloader" src="img/preloader.svg" alt="preloader">
+	<canvas style="display: none" id="render-area"></canvas>
 </div>
 <script src="js/jquery-3.3.1.min.js"></script>
-<script src="js/renderframes.js"></script>
+<script src="renderframes1.8.js"></script>
 </body>
 </html>
