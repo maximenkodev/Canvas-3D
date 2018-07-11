@@ -1,43 +1,13 @@
-$(document).ready(function () {
-    if ($(window).width() > 768) {
-        var animationExample = new Canvas3D({
-            countFramesHorizontal: 80,
-            countFramesVertical: 81,
-            pathToFrames: "frames/education",
-            activateFor: "#render-area",
-            playHorizontal: true, // Turn on/off horizontal animations (mousemove) [true/false]
-            playVertical: true, // Turn on/off vertical animations (scroll, mousewheel) [true/false]
-            pageID: false, // todo Will work, if Selector ID exist on page [#selector/false]
-            clickSelector: false, // Will work if Selector has class 'active' [selector/false]
-            listSelector: false // Class of list elements (<li>) [selector/false]
-        });
-        animationExample.InitRender({
-            canvWidth: 1920,
-            canvHeight: 700,
-            autoplaySpeed: 3, // How fast will animate reverse animation (default: 3) [1 - 9]
-            offsetToAnimateY: 300, // Position, where scroll will animation start. Difference between canvas top (default: 300) [0 - 999]
-            startFromLast: false
-        });
-    }
-});
+import $ from 'jquery';
 
-function Canvas3D(params) {
+export default function Canvas3D(params) {
     /*----------Canvas3D Constructor----------*/
     params.countFramesHorizontal > 0 ? this.countFramesHorizontal = params.countFramesHorizontal : Log("countFramesHorizontal must be 1 or more");
-
     params.countFramesVertical > 0 ? this.countFramesVertical = params.countFramesVertical : Log("countFramesVertical must be 1 or more");
 
-    switch (params.pathToFrames) {
-        case "/":
-        case "":
-            this.pathToFrames = "";
-            break;
-        default:
-            this.pathToFrames = params.pathToFrames;
-    }
+    this.pathToFrames = params.pathToFrames;
 
     typeof params.playHorizontal === "boolean" ? this.playHorizontal = params.playHorizontal : Log("playHorizontal must be only true or false");
-
     typeof params.playVertical === "boolean" ? this.playVertical = params.playVertical : Log("playVertical must be only true or false");
 
     switch (params.pageID) {
@@ -51,7 +21,6 @@ function Canvas3D(params) {
         default:
             this.pageID = params.pageID;
     }
-
     switch (params.clickSelector) {
         case false:
         case "":
@@ -92,7 +61,7 @@ function Canvas3D(params) {
     }
 
     this.InitRender = function (params) {
-        var renderParams = {
+        let renderParams = {
             "countFramesX": this.countFramesHorizontal,
             "countFramesY": this.countFramesVertical,
             "pathToFrames": this.pathToFrames,
@@ -104,13 +73,13 @@ function Canvas3D(params) {
             "listSelector": this.listSelector
         };
 
-        var partsHorizontal = Math.round($(window).width() / renderParams.countFramesX);
-        var limitFrames = renderParams.countFramesX;
+        let partsHorizontal = Math.round($(window).width() / renderParams.countFramesX);
+        let limitFrames = renderParams.countFramesX;
 
-        var activeImgHorizontal = 1;
-        var activeImgVertical = 1;
+        let activeImgHorizontal = 1;
+        let activeImgVertical = 1;
 
-        var reverseWork = {
+        let reverseWork = {
             "work": false,
             "reverseX": false,
             "reverseXBack": false,
@@ -118,31 +87,31 @@ function Canvas3D(params) {
             "reverseYBack": false
         };
 
-        var wheelWork = false;
-        var renderArea = $(renderParams.activateFor);
+        let wheelWork = false;
+        let renderArea = $(renderParams.activateFor);
         /*----------Init after loading----------*/
-        var renderAreaTop = 0;
-        var renderAreaBottom = 0;
+        let renderAreaTop = 0;
+        let renderAreaBottom = 0;
         /*----------End: Init after loading----------*/
-        var offsetForY = params.offsetToAnimateY;
+        let offsetForY = params.offsetToAnimateY;
 
-        var tmpStep = 0;
-        var skipSteps = false;
-        var autoplaySpeed = params.autoplaySpeed;
-        var tmpFrameX = 0;
+        let tmpStep = 0;
+        let skipSteps = false;
+        let autoplaySpeed = params.autoplaySpeed;
+        let tmpFrameX = 0;
 
-        var canvas = renderArea.get(0);
+        let canvas = renderArea.get(0);
         canvas.width = params.canvWidth;
         canvas.height = params.canvHeight;
-        var canvasContext = canvas.getContext('2d');
-        var canvasImg;
+        let canvasContext = canvas.getContext('2d');
 
-        var loadingProgress = 0;
-        var preRenderFinish = false;
+        let preloader = $(params.preloader);
+        let loadingProgress = 0;
+        let preRenderFinish = false;
 
-        var clickCheck = false;
+        let clickCheck = false;
         $(renderParams.clickSelector).hasClass("active") || renderParams.clickSelector === false ? clickCheck = true : clickCheck = false;
-        $(renderParams.listSelector).click(function () {
+        $(renderParams.listSelector).on('click', function () {
             $(this).hasClass(renderParams.clickSelector.replace(".", "")) ? clickCheck = true : clickCheck = true;
         });
 
@@ -150,26 +119,29 @@ function Canvas3D(params) {
 
         }
         /*----------PreRender images on load----------*/
-        $(document).ready(function () {
+        $(function () {
             InsertImages();
         });
+
         /*----------playHorizontal === true----------*/
-        $(window).mousemove(function (ev) {
+        $(window).on('mousemove', function (ev) {
             tmpFrameX = Math.round(ev.pageX / partsHorizontal);
             if (CheckStatus()) {
                 AnimateHorizontal(ev.pageX);
             }
         });
+
         /*----------playVertical === true----------*/
-        $(window).scroll(function (ev) {
-            if (CheckStatus()) {
-                // TODO add scroll logic
-            }
-        });
+        // $(window).on('scroll',function (ev) {
+        //     if (CheckStatus()) {
+        //         // Todo add scroll logic
+        //     }
+        // });
+
         /*----------playVertical === true----------*/
         $(window).on("wheel", function (ev) {
+            /*----------SCROLL DOWN----------*/
             if (CheckStatus()) {
-                // SCROLL DOWN
                 if (ev.originalEvent.deltaY >= 0 && $(window).scrollTop() >= renderAreaTop - offsetForY) {
                     wheelWork = true;
                     switch (tmpStep) { // tmpStep = step in params of sequence
@@ -213,11 +185,11 @@ function Canvas3D(params) {
                     // }, 10));
 
                     if (tmpStep < 3 && !skipSteps) {
-                        ev.preventDefault();
+                        // Todo or not) ev.preventDefault();
                     }
                 }
                 /*----------SCROLL UP----------*/
-                else if (ev.originalEvent.deltaY <= 0 && $(window).scrollTop() <= renderAreaBottom) {
+                else if (ev.originalEvent.deltaY <= 0 && $(window).scrollTop() <= (renderAreaBottom - canvas.height / 4)) {
                     if (!reverseWork.work && wheelWork)
                         ReverseYBack({
                             step: 0,
@@ -236,7 +208,7 @@ function Canvas3D(params) {
                             wheel: true
                         });
                 }
-                AnimateVertical($(this).scrollTop);
+                // AnimateVertical($(this).scrollTop);
             }
         });
 
@@ -256,11 +228,11 @@ function Canvas3D(params) {
             }
         }
 
-        function AnimateVertical(documentPositionTop) {
-            if (clickCheck) {
-                // TODO Continue
-            }
-        }
+        // function AnimateVertical(documentPositionTop) {
+        //     if (clickCheck) {
+        //         // Todo Continue
+        //     }
+        // }
 
         /*----------Reverse on scroll----------*/
         function ReverseX(params) {
@@ -272,7 +244,7 @@ function Canvas3D(params) {
 
             console.log(activeImgHorizontal + " : " + params.next);
             if (activeImgHorizontal < params.next) {
-                var timer = setInterval(function () {
+                let timer = setInterval(function () {
                     if (activeImgHorizontal < params.next) {
                         activeImgHorizontal += autoplaySpeed;
                         Render(activeImgHorizontal, "ih");
@@ -303,7 +275,7 @@ function Canvas3D(params) {
                 params.next = renderParams.countFramesY;
 
             if (activeImgVertical < params.next) {
-                var timer = setInterval(function () {
+                let timer = setInterval(function () {
                     if (activeImgVertical < params.next) {
                         activeImgVertical += autoplaySpeed;
                         Render(activeImgVertical, "iv");
@@ -330,7 +302,7 @@ function Canvas3D(params) {
             if (params.next === false)
                 params.next = 0;
 
-            var timer = setInterval(function () {
+            let timer = setInterval(function () {
                 if (activeImgHorizontal > params.next) {
                     activeImgHorizontal -= autoplaySpeed;
                     Render(activeImgHorizontal, "ih");
@@ -356,7 +328,7 @@ function Canvas3D(params) {
             if (params.next === false)
                 params.next = 0;
 
-            var timer = setInterval(function () {
+            let timer = setInterval(function () {
                 if (activeImgVertical > params.next) {
                     activeImgVertical -= autoplaySpeed;
                     Render(activeImgVertical, "iv");
@@ -379,7 +351,7 @@ function Canvas3D(params) {
 
         /*----------Render----------*/
         function InsertImages() {
-            var i;
+            let i;
             for (i = 1; i <= renderParams.countFramesX; i++) {
                 PreRender(i, "ih");
             }
@@ -391,13 +363,17 @@ function Canvas3D(params) {
         function DisplayCanvas() {
             Render(activeImgHorizontal, "ih");
 
+            preloader.remove();
             renderArea.fadeIn();
             renderAreaTop = renderArea.offset().top;
             renderAreaBottom = renderArea.offset().top + renderArea.height();
-
-            $("#canvas-preloader").remove();
             preRenderFinish = true;
         }
+
+        let imageBuffer = {
+            iv: [],
+            ih: []
+        };
 
         function PreRender(num, selector) {
             console.log(selector);
@@ -412,12 +388,12 @@ function Canvas3D(params) {
                     limitFrames = renderParams.countFramesX;
             }
             if (num <= limitFrames && num > 0) {
-                canvasImg = new Image();
-                canvasImg.src = renderParams.pathToFrames + "/" + selector + "/(" + num + ").jpg?hash=" + selector;
-                canvasImg.onload = function () {
-                    canvasContext.drawImage(canvasImg, 0, 0);
+                let canvasImg = new Image();
+                canvasImg.src = renderParams.pathToFrames + "/" + selector + "/(" + num + ").jpg?dir=" + selector;
+                canvasImg.onload = () => {
+                    imageBuffer[selector][num] = canvasImg;
                     loadingProgress++;
-                    if (loadingProgress >= renderParams.countFramesX && preRenderFinish === false) {
+                    if (loadingProgress >= renderParams.countFramesX && !preRenderFinish) {
                         DisplayCanvas();
                     }
                 }
@@ -436,11 +412,8 @@ function Canvas3D(params) {
                     limitFrames = renderParams.countFramesX;
             }
             if (num <= limitFrames && num > 0) {
-                canvasImg = new Image();
-                canvasImg.src = renderParams.pathToFrames + "/" + selector + "/(" + num + ").jpg?hash=" + selector;
-                canvasImg.onload = function () {
-                    canvasContext.drawImage(canvasImg, 0, 0);
-                }
+                let canvasImg = imageBuffer[selector][num];
+                canvasContext.drawImage(canvasImg, 0, 0);
             }
         }
     };
