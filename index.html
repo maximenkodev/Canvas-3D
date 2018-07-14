@@ -10,10 +10,10 @@
 </head>
 <body>
 <!--<span class="clock-interactive active"></span>-->
-<div class="img-container">
+<div class="img-container flex-center">
     <div>
-        <h2>Canvas 3D (Demo)</h2>
-        <p>Move mouse from left to right near images</p>
+        <h2 class="title">Canvas 3D (Demo)</h2>
+        <p class="description">Move mouse from left to right near images</p>
     </div>
 </div>
 <div class="img-container">
@@ -28,7 +28,7 @@
         <canvas class="canvas-render-area" id="render-area-helmet"></canvas>
     </div>
 </div>
-<div class="img-container">
+<div class="img-container flex-center">
     <div>
         <img class="preloader" id="canvas-preloader-clock" src="img/preloader.svg" alt="preloader">
         <canvas class="canvas-render-area" id="render-area-clock"></canvas>
@@ -40,12 +40,16 @@
         <canvas class="canvas-render-area" id="render-area-edu"></canvas>
     </div>
 </div>
-<div class="img-container">
+<div class="img-container flex-center">
     <div>
-        <h2>The end</h2>
-        <p>Author: <a href="https://github.com/maximenkodev">Maxim Maximenko</a></p>
-        <p>Source: <a href="https://github.com/maximenkodev/Canvas-3D">https://github.com/maximenkodev/Canvas-3D</a></p>
-        <p>Similar solution from Apple: <a href="https://www.apple.com/imac-pro/">https://www.apple.com/imac-pro/</a></p>
+        <h2 class="title">The end</h2>
+        <div class="description">
+            <p>Author: <a href="https://github.com/maximenkodev">Maxim Maximenko</a></p>
+            <p>Source: <a href="https://github.com/maximenkodev/Canvas-3D">https://github.com/maximenkodev/Canvas-3D</a>
+            </p>
+            <p>Similar solution from Apple: <a
+                    href="https://www.apple.com/imac-pro/">https://www.apple.com/imac-pro/</a></p>
+        </div>
     </div>
 </div>
 <script src="dist/main.js"></script>
